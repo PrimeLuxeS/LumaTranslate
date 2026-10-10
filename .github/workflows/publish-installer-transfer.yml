@@ -1,0 +1,36 @@
+name: Publish LumaTranslate public installer
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-installer-transfer.yml'
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Transfer and verify installer
+        shell: bash
+        env:
+          INSTALLER_URL_B64: 'aHR0cHM6Ly9yZWxlYXNlLWFzc2V0cy5naXRodWJ1c2VyY29udGVudC5jb20vZ2l0aHViLXByb2R1Y3Rpb24tcmVsZWFzZS1hc3NldC8xNDEyNzM2NzkzLzUzNWZmZmU4LTNlOTktNGU4Yi05MThlLTI1NDhkYTRiOGMwNT9zcD1yJnN2PTIwMTgtMTEtMDkmc3I9YiZzcHI9aHR0cHMmc2U9MjAyNi0xMC0xMFQxNyUzQTMyJTNBMzNaJnJzY2Q9YXR0YWNobWVudCUzQitmaWxlbmFtZSUzREx1bWFUcmFuc2xhdGUtU2V0dXAuZXhlJnJzY3Q9YXBwbGljYXRpb24lMkZvY3RldC1zdHJlYW0mc2tvaWQ9OTZjMmQ0MTAtNTcxMS00M2ExLWFlZGQtYWIxOTQ3YWE3YWIwJnNrdGlkPTM5OGE2NjU0LTk5N2ItNDdlOS1iMTJiLTk1MTViODk2YjRkZSZza3Q9MjAyNi0xMC0xMFQxNiUzQTMyJTNBMTlaJnNrZT0yMDI2LTEwLTEwVDE3JTNBMzIlM0EzM1omc2tzPWImc2t2PTIwMTgtMTEtMDkmc2lnPVlRZUlNZ3J6eVJHanpGZjhjTVIxT1FzdXdHTlU1a0Y2JTJGcmNFeFEwODRDOCUzRCZqd3Q9ZXlKMGVYQWlPaUpLVjFRaUxDSmhiR2NpT2lKSVV6STFOaUo5LmV5SnBjM01pT2lKbmFYUm9kV0l1WTI5dElpd2lZWFZrSWpvaWNtVnNaV0Z6WlMxaGMzTmxkSE11WjJsMGFIVmlkWE5sY21OdmJuUmxiblF1WTI5dElpd2lhMlY1SWpvaWEyVjVNU0lzSW1WNGNDSTZNVGM1TVRZMU1qSTFNQ3dpYm1KbUlqb3hOemt4TmpVd05EVXdMQ0p3WVhSb0lqb2ljbVZzWldGelpXRnpjMlYwY0hKdlpIVmpkR2x2Ymk1aWJHOWlMbU52Y21VdWQybHVaRzkzY3k1dVpYUWlmUS5GSllVVnU4dzZVaEFDQzExbjRCV3loTzBHZndJWlMya2QweFhQTmQ1ZVQwJnJlc3BvbnNlLWNvbnRlbnQtZGlzcG9zaXRpb249YXR0YWNobWVudCUzQiUyMGZpbGVuYW1lJTNETHVtYVRyYW5zbGF0ZS1TZXR1cC5leGUmcmVzcG9uc2UtY29udGVudC10eXBlPWFwcGxpY2F0aW9uJTJGb2N0ZXQtc3RyZWFt'
+          EXPECTED_SHA256: '4735c51a7386b9281263e3527287ef716b0ccecbacaba6a618c65e662b6f67e1'
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          URL="$(printf '%s' "$INSTALLER_URL_B64" | base64 --decode)"
+          curl --fail --location --silent --show-error --retry 2 --output LumaTranslate-Setup.exe "$URL"
+          printf '%s  LumaTranslate-Setup.exe\n' "$EXPECTED_SHA256" | sha256sum --check --status
+          printf '%s  LumaTranslate-Setup.exe\n' "$EXPECTED_SHA256" > LumaTranslate-Setup.exe.sha256
+          cat > notes.md <<'NOTES'
+          # LumaTranslate Classic v1.0.0
+
+          Windows 10/11 x64. Download **LumaTranslate-Setup.exe**, run the graphical installer, and optionally create a desktop shortcut.
+
+          ## Русский
+
+          Версия для Windows 10/11 x64. Скачайте **LumaTranslate-Setup.exe** и запустите графический мастер установки. Можно создать ярлык на рабочем столе, а затем удалить приложение через Windows или настройки LumaTranslate.
+
+          The installer is not digitally signed / Установщик не подписан цифровой подписью.
+          NOTES
+          gh release create v1.0.0 LumaTranslate-Setup.exe LumaTranslate-Setup.exe.sha256 --repo "$GITHUB_REPOSITORY" --target main --title "LumaTranslate Classic v1.0.0" --notes-file notes.md --latest
