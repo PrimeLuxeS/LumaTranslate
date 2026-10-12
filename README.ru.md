@@ -4,7 +4,7 @@
 
 # LumaTranslate Classic
 
-**Бесплатный переводчик для Windows 10/11. Выделяй текст, переводи и заменяй прямо в приложении.**
+**Бесплатный переводчик для Windows 10/11 и macOS 13+. Перевод выделения, Rekey и распознавание текста с экрана.**
 
 [**Скачать LumaTranslate**](https://github.com/PrimeLuxeS/LumaTranslate/releases/latest) · [English](README.md)
 
@@ -22,7 +22,7 @@
 - **Словарь, история, избранное, озвучка** и виртуальная клавиатура.
 - **Настраиваемые горячие клавиши**, светлая и тёмная темы, оформление всплывающего окна, прокси и исключения для приложений.
 
-## Горячие клавиши
+## Горячие клавиши (Windows)
 
 | Действие | По умолчанию |
 | --- | --- |
@@ -41,3 +41,9 @@
 Скачай [**LumaTranslate-Setup.exe**](https://github.com/PrimeLuxeS/LumaTranslate/releases/latest), запусти установщик и при желании создай ярлык на рабочем столе. Удалить приложение можно через настройки Windows.
 
 **Важно:** онлайн-перевод требует интернет, но не требует личных API-ключей переводчиков. Локальный Windows OCR работает без интернета; для OCR.space нужен отдельный ключ. Работа с выделением зависит от возможностей конкретного приложения.
+
+### macOS — тестовая версия
+
+[**Apple Silicon (M1–M5)**](https://github.com/PrimeLuxeS/LumaTranslate/releases/download/v1.0.1/LumaTranslate-macOS-arm64.dmg) · [**Intel Mac**](https://github.com/PrimeLuxeS/LumaTranslate/releases/download/v1.0.1/LumaTranslate-macOS-x64.dmg)
+
+Перетащи LumaTranslate в «Программы». Горячие клавиши Mac начинаются с `Control+Option+Q/S/L/O` и меняются в настройках. Сборка пока без нотариального заверения Apple; для глобальных клавиш и OCR нужны системные разрешения.

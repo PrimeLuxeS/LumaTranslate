@@ -1,0 +1,43 @@
+name: Publish verified macOS binaries
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-macos-once.yml'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Verify and attach macOS installers
+        shell: bash
+        env:
+          HANDOFF_URL: 'https://sdmntpritalynorth.oaiusercontent.com/files/00000000-9214-8246-850c-8d3668319c07/raw?se=2026-10-12T20%3A47%3A27Z&sp=r&sv=2026-02-06&sr=b&scid=0d6a2eea-df7a-5e49-bd1d-cd8c0e96b48a&skoid=5bfb38a5-43fb-4c63-80a1-6ae1e97e2e16&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-12T04%3A44%3A00Z&ske=2026-10-13T04%3A44%3A00Z&sks=b&skv=2026-02-06&sig=C0o4YM6o49EUwIobge0dMgAM/WzmZ1mroD2NKI8WBJU%3D'
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 4 --max-time 600 \
+            -o handoff.zip "$HANDOFF_URL"
+          echo 'ed9b73fedf423610490bf8d3ac47e06ac7076823a561e9935b458b6746f6b81a  handoff.zip' | sha256sum --check
+          test "$(stat -c%s handoff.zip)" -eq 97634400
+          unzip -j -o handoff.zip
+          sha256sum --check LumaTranslate-macOS-arm64.dmg.sha256
+          sha256sum --check LumaTranslate-macOS-x64.dmg.sha256
+          test "$(stat -c%s LumaTranslate-macOS-arm64.dmg)" -eq 49393002
+          test "$(stat -c%s LumaTranslate-macOS-x64.dmg)" -eq 50927987
+          gh release view v1.0.1 --repo "$GITHUB_REPOSITORY" >/dev/null
+          gh release upload v1.0.1 LumaTranslate-macOS-arm64.dmg \
+            LumaTranslate-macOS-arm64.dmg.sha256 \
+            LumaTranslate-macOS-x64.dmg LumaTranslate-macOS-x64.dmg.sha256 \
+            --clobber --repo "$GITHUB_REPOSITORY"
+          id=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/v1.0.1" --jq '.id')
+          assets=$(gh api "repos/$GITHUB_REPOSITORY/releases/$id/assets")
+          for arch in arm64 x64; do
+            name="LumaTranslate-macOS-$arch.dmg"
+            expected=$(sha256sum "$name" | cut -d' ' -f1)
+            actual=$(jq -r --arg n "$name" '.[] | select(.name==$n) | .digest' <<<"$assets")
+            test "$actual" = "sha256:$expected"
+          done
+          test "$(jq -r '.[] | select(.name=="LumaTranslate-Setup.exe") | .size' <<<"$assets")" -gt 50000000

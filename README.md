@@ -4,7 +4,7 @@
 
 # LumaTranslate Classic
 
-**Free translator for Windows 10/11. Select text, translate it, and replace it directly in other apps.**
+**Free translator for Windows 10/11 and macOS 13+. Translate selected text, fix layout and recognize screen text.**
 
 [**Download LumaTranslate**](https://github.com/PrimeLuxeS/LumaTranslate/releases/latest) · [Русский](README.ru.md)
 
@@ -22,7 +22,7 @@
 - **Dictionary, history, favorites, speech**, and an on-screen keyboard.
 - **Customizable shortcuts**, light/dark themes, popup appearance, proxy settings, and per-app exclusions.
 
-## Keyboard shortcuts
+## Keyboard shortcuts (Windows)
 
 | Action | Default |
 | --- | --- |
@@ -41,3 +41,7 @@ All shortcuts can be changed or disabled in Settings. Double-`Ctrl` translation 
 Download [**LumaTranslate-Setup.exe**](https://github.com/PrimeLuxeS/LumaTranslate/releases/latest), run the installer, and optionally add a desktop shortcut. Uninstall through Windows Settings.
 
 **Note:** Online translation requires internet access, but no personal translation-provider API keys. Built-in Windows OCR works offline; OCR.space requires its own key. Selected-text operations depend on the target application's support.
+
+### macOS preview
+
+For Apple Silicon: [**Download Mac ARM64**](https://github.com/PrimeLuxeS/LumaTranslate/releases/download/v1.0.1/LumaTranslate-macOS-arm64.dmg). For Intel Macs: [**Download Mac x64**](https://github.com/PrimeLuxeS/LumaTranslate/releases/download/v1.0.1/LumaTranslate-macOS-x64.dmg). Move the app to Applications. Mac shortcuts start at `Control+Option+Q/S/L/O` and can be edited. This preview is not Apple-notarized; selection shortcuts and OCR require macOS permissions.
