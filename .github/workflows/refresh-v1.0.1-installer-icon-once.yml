@@ -1,0 +1,41 @@
+name: Refresh LumaTranslate v1.0.1 branded installer
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refresh-v1.0.1-installer-icon-once.yml'
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download verified installer and update v1.0.1 only
+        shell: bash
+        env:
+          HANDOFF_URL: 'https://sdmntprcentralus.oaiusercontent.com/files/00000000-219c-81f5-bbec-872a90ff0748/raw?se=2026-10-12T18%3A11%3A44Z&sp=r&sv=2026-02-06&sr=b&scid=b636e0d8-b1b2-55cd-8969-5e4a5a82f894&skoid=5bfb38a5-43fb-4c63-80a1-6ae1e97e2e16&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-12T04%3A44%3A02Z&ske=2026-10-13T04%3A44%3A02Z&sks=b&skv=2026-02-06&sig=e2QWZ%2BqZMcOzV7Cnp5OFLVWZ/YwrOsT2INOzbCHLS3Y%3D'
+          EXPECTED_SHA256: '3eb7a4cb8bcbaf495666af6ded3d0dc81bbb42c4e4842f309e0a3cb6c9671f71'
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 3 --connect-timeout 30 --max-time 180 --output handoff.zip "$HANDOFF_URL"
+          unzip -j -o handoff.zip LumaTranslate-Setup.exe LumaTranslate-Setup.exe.sha256
+          printf '%s  LumaTranslate-Setup.exe\n' "$EXPECTED_SHA256" | sha256sum --check
+          sha256sum --check LumaTranslate-Setup.exe.sha256
+          test "$(stat -c%s LumaTranslate-Setup.exe)" -eq 54920263
+          test "$(stat -c%s LumaTranslate-Setup.exe.sha256)" -eq 90
+          gh release view v1.0.1 --repo "$GITHUB_REPOSITORY" >/dev/null
+          replaced=0
+          for attempt in 1 2 3; do
+            if gh release upload v1.0.1 LumaTranslate-Setup.exe LumaTranslate-Setup.exe.sha256 --repo "$GITHUB_REPOSITORY" --clobber; then
+              replaced=1
+              break
+            fi
+            sleep 8
+          done
+          test "$replaced" -eq 1
+          id=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/v1.0.1" --jq '.id')
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/$id/assets" --jq '.[] | select(.name == "LumaTranslate-Setup.exe") | .size')" -eq 54920263
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/$id/assets" --jq '.[] | select(.name == "LumaTranslate-Setup.exe.sha256") | .size')" -eq 90
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name')" = v1.0.1
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases" --jq '[.[] | select(.draft == false) | .tag_name] | sort | join(",")')" = "v1.0.0,v1.0.1"
