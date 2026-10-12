@@ -1,3 +1,7 @@
+<div align="center">
+<img src="assets/LumaTranslate-logo.png" width="128" alt="Логотип LumaTranslate Classic">
+</div>
+
 # LumaTranslate Classic
 
 **Бесплатный переводчик для Windows 10 и 11 (x64).**
