@@ -1,0 +1,35 @@
+name: Remove macOS preview release assets
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/hide-macos-release-once.yml'
+permissions:
+  contents: write
+jobs:
+  unpublish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove macOS DMGs and checksums from v1.0.1
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          test "$(gh api "repos/$repo/releases/tags/v1.0.1" --jq .tag_name)" = v1.0.1
+          while IFS='|' read -r id name; do
+            actual="$(gh api "repos/$repo/releases/assets/$id" --jq .name)"
+            test "$actual" = "$name"
+            gh api -X DELETE "repos/$repo/releases/assets/$id" >/dev/null
+          done <<'ASSETS'
+          634938840|LumaTranslate-macOS-arm64.dmg
+          634938842|LumaTranslate-macOS-arm64.dmg.sha256
+          634938841|LumaTranslate-macOS-x64.dmg
+          634938839|LumaTranslate-macOS-x64.dmg.sha256
+          ASSETS
+          assets="$(gh api "repos/$repo/releases/tags/v1.0.1" --jq '.assets[].name')"
+          ! grep -qi 'macos' <<< "$assets"
+          grep -qx 'LumaTranslate-Setup.exe' <<< "$assets"
+          grep -qx 'LumaTranslate-Setup.exe.sha256' <<< "$assets"
+          test "$(wc -l <<< "$assets")" -eq 2
